@@ -13,6 +13,8 @@ const Login = () => {
         e.preventDefault();
         const data = await axios.post(import.meta.env.VITE_BACKEND_URL + 'user_login/', { email, password } );
         console.log(data);
+        sessionStorage.setItem('user', JSON.stringify(data.data.data)); 
+        console.log(data.data);
         if(data.status === 200) {
             navigate('/dashboard');
 
@@ -20,8 +22,8 @@ const Login = () => {
         }
         return <div>Wrong Credetial</div>
        
-        console.log('Email:', email);
-        console.log('Password:', password);
+        // console.log('Email:', email);
+        // console.log('Password:', password);
     };
 
     return (
