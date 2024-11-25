@@ -11,7 +11,7 @@ const Login = () => {
 
     const handleSubmit = async(e) => {
         e.preventDefault();
-        const data = await axios.post(import.meta.env.VITE_BACKEND_URL + 'user_login/', { email, password });
+        const data = await axios.post(import.meta.env.VITE_BACKEND_URL + 'user_login/', { email, password } );
         console.log(data);
         if(data.status === 200) {
             navigate('/dashboard');
