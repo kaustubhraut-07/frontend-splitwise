@@ -1,14 +1,25 @@
-// src/components/Login.jsx
 
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = (e) => {
+    const navigate = useNavigate();
+
+    const handleSubmit = async(e) => {
         e.preventDefault();
-        // Handle login logic here
+        const data = await axios.post(import.meta.env.VITE_BACKEND_URL + 'user_login/', { email, password });
+        console.log(data);
+        if(data.status === 200) {
+            navigate('/dashboard');
+
+
+        }
+        return <div>Wrong Credetial</div>
+       
         console.log('Email:', email);
         console.log('Password:', password);
     };

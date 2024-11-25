@@ -1,18 +1,29 @@
-// src/components/Registration.jsx
 
 import React, { useState } from 'react';
-
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 const Registration = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = (e) => {
+    const navigate = useNavigate();
+
+    const handleSubmit =async (e) => {
         e.preventDefault();
-        // Handle registration logic here
+
+        const data = await axios.post(import.meta.env.VITE_BACKEND_URL + 'user_registeration/', { name, email, password });
+
+        if(data.status === 201) {
+            navigate('/login');
+            return;
+        }
+        console.log(data);
         console.log('Name:', name);
         console.log('Email:', email);
         console.log('Password:', password);
+        return <div>Wrong Credetial</div>
+        
     };
 
     return (
