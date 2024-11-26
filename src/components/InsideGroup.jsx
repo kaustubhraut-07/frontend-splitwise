@@ -6,9 +6,10 @@ const InsideGroup = () => {
   const location = useLocation();
   const groupId = location.state; 
   const [groupInfo, setGroupInfo] = useState(null);
-  const [newUserEmail, setNewUserEmail] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [usersList, setUsersList] = useState([]);
 
   // Fetch group info
   const getGroupInfo = async () => {
@@ -20,18 +21,31 @@ const InsideGroup = () => {
     }
   };
 
-  // Add user to group
+ 
+  const getAllUserList = async () => {
+    try {
+      const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}getAllUsers/`);
+      setUsersList(data.data);
+    } catch (error) {
+      console.error('Error fetching user list:', error);
+    }
+  };
+
+ 
   const handleAddUser = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
+    if (!selectedUserId) {
+      setErrorMessage('Please select a user.');
+      return;
+    }
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}addUserToGroup/`, {
-        groupId,
-        email: newUserEmail,
+      const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}add_user_to_group/${groupId}/`, {
+        user_info: selectedUserId,
       });
       setSuccessMessage(response.data.message || 'User added successfully!');
-      setNewUserEmail('');
+      setSelectedUserId('');
       getGroupInfo(); 
     } catch (error) {
       setErrorMessage(error.response?.data?.error || 'Failed to add user. Please try again.');
@@ -40,6 +54,7 @@ const InsideGroup = () => {
 
   useEffect(() => {
     getGroupInfo();
+    getAllUserList();
   }, []);
 
   return (
@@ -49,9 +64,9 @@ const InsideGroup = () => {
           Group: {groupInfo?.name || 'Loading...'}
         </h1>
 
-        
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">Group Members</h2>
-        <ul className="space-y-3">
+    
+        <h2 className="text-lg font-semibold text-gray-700 mb-3">Group Members : {groupInfo?.users?.length}</h2>
+        {/* <ul className="space-y-3">
           {groupInfo?.users?.map((user, index) => (
             <li
               key={index}
@@ -60,20 +75,27 @@ const InsideGroup = () => {
               <span className="text-gray-800">{user.name} ({user.email})</span>
             </li>
           ))}
-        </ul>
+        </ul> */}
 
-        
+       
         <div className="mt-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-3">Add a User</h2>
           <form onSubmit={handleAddUser} className="space-y-4">
-            <input
-              type="email"
-              placeholder="Enter user email"
-              value={newUserEmail}
-              onChange={(e) => setNewUserEmail(e.target.value)}
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
-            />
+            >
+              <option value="" disabled>
+                Select a user
+              </option>
+              {usersList.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name} ({user.email})
+                </option>
+              ))}
+            </select>
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
@@ -82,7 +104,7 @@ const InsideGroup = () => {
             </button>
           </form>
 
-          
+        
           {successMessage && <p className="text-green-600 mt-3">{successMessage}</p>}
           {errorMessage && <p className="text-red-600 mt-3">{errorMessage}</p>}
         </div>
