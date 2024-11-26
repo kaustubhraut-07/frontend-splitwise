@@ -16,7 +16,7 @@ const CreateGroup = () => {
     }
 
     console.log('Group Name:', groupName); 
-    const data = await axios.post(import.meta.env.VITE_BACKEND_URL + 'create_group/', { groupName: groupName });
+    const data = await axios.post(import.meta.env.VITE_BACKEND_URL + 'create_group/', { groupName: groupName , created_by : JSON.parse(sessionStorage.getItem('user')).id }); 
     console.log(data);
     if(data.status === 201) {
         alert('Group created successfully!'); 
