@@ -52,6 +52,17 @@ const InsideGroup = () => {
     }
   };
 
+  const getUserInfo = (userId) => {
+
+    try {
+      const user = usersList.find((user) => user.id === userId);
+      return user ? `${user.name} (${user.email})` : 'User not found';
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+   
+  };
+
   useEffect(() => {
     getGroupInfo();
     getAllUserList();
@@ -66,16 +77,16 @@ const InsideGroup = () => {
 
     
         <h2 className="text-lg font-semibold text-gray-700 mb-3">Group Members : {groupInfo?.users?.length}</h2>
-        {/* <ul className="space-y-3">
-          {groupInfo?.users?.map((user, index) => (
+        <ul className="space-y-3">
+          {groupInfo?.users?.length && groupInfo?.users?.map((user, index) => (
             <li
               key={index}
               className="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-md"
             >
-              <span className="text-gray-800">{user.name} ({user.email})</span>
+              <span className="text-gray-800">{getUserInfo(user)}</span>
             </li>
           ))}
-        </ul> */}
+        </ul>
 
        
         <div className="mt-6">
