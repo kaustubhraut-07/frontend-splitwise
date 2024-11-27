@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
+import AddExpense from './AddExpense';
 
 const InsideGroup = () => {
   const location = useLocation();
@@ -120,6 +121,8 @@ const InsideGroup = () => {
           {errorMessage && <p className="text-red-600 mt-3">{errorMessage}</p>}
         </div>
       </div>
+
+      <AddExpense groupId={groupId}/>
     </div>
   );
 };
