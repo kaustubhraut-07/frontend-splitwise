@@ -6,29 +6,60 @@ const AddExpense = ({ groupId }) => {
   const [expenseName, setExpenseName] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenses, setExpenses] = useState([]);
+  const [settlements, setSettlements] = useState([]);
   const currentUserId = JSON.parse(sessionStorage.getItem('user')).id;
 
+  
   const getAllExpensesinGroup = async () => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}get_all_expenses_in_group/${groupId}/`);
-      console.log(data);
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}get_all_expenses_in_group/${groupId}/`
+      );
+      console.log('Expenses:', data);
       setExpenses(data.data);
     } catch (error) {
       console.error('Error fetching expenses:', error);
     }
   };
 
+
+  const getAllSettlementsinGroup = async () => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}get_all_settlement_in_group/${groupId}/`
+      );
+      console.log('Settlements:', data);
+      const filteredSettlements = data.data
+        .filter(
+          (settlement) => settlement.paid_by === currentUserId 
+        )
+        .map((settlement) => ({
+          ...settlement,
+          paid_by: settlement.paid_to,
+          paid_to: settlement.paid_by, 
+        }));
+      setSettlements(filteredSettlements);
+    } catch (error) {
+      console.error('Error fetching settlements:', error);
+    }
+  };
+
+ 
   const handleAddExpense = async () => {
     if (expenseName && expenseAmount) {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}create_expense/`, {
-          group_id: groupId,
-          expense_name: expenseName,
-          expense_amount: expenseAmount,
-          expense_paid_by: currentUserId,
-        });
-        console.log(response);
-        setExpenses([...expenses, { ...response.data, expense_paid_by: currentUserId }]);
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}create_expense/`,
+          {
+            group_id: groupId,
+            expense_name: expenseName,
+            expense_amount: expenseAmount,
+            expense_paid_by: currentUserId,
+          }
+        );
+        console.log('Expense added:', data);
+        getAllExpensesinGroup();
+        getAllSettlementsinGroup();
         setExpenseName('');
         setExpenseAmount('');
         setIsModalOpen(false);
@@ -40,14 +71,19 @@ const AddExpense = ({ groupId }) => {
     }
   };
 
+
   const handleSettleExpense = async (expenseId) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}settle_expense/`, {
-        expense_id: expenseId,
-        settled_by: currentUserId,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}settle_expense/`,
+        {
+          expense_id: expenseId,
+          settled_by: currentUserId,
+        }
+      );
       console.log('Expense settled:', response);
-      getAllExpensesinGroup(); // Refresh expenses after settlement
+      getAllExpensesinGroup();
+      getAllSettlementsinGroup();
     } catch (error) {
       console.error('Error settling expense:', error);
     }
@@ -55,6 +91,7 @@ const AddExpense = ({ groupId }) => {
 
   useEffect(() => {
     getAllExpensesinGroup();
+    getAllSettlementsinGroup();
   }, []);
 
   return (
@@ -110,17 +147,15 @@ const AddExpense = ({ groupId }) => {
 
       <div className="mt-6 w-full max-w-md">
         <h3 className="text-lg font-bold mb-2">Added Expenses:</h3>
-        { console.log('Expenses:', expenses)}
         {expenses.length > 0 ? (
           <ul className="space-y-2">
             {expenses.map((expense) => (
               <li key={expense.id} className="flex justify-between items-center p-2 border rounded bg-gray-50">
                 <div>
-                  <span>{expense.name
-                  }</span>
+                  <span>{expense.name}</span>
                   <span className="ml-2">${expense.amount}</span>
                 </div>
-                {expense.paid_by !== currentUserId && (
+                {expense.paid_to !== currentUserId && (
                   <button
                     onClick={() => handleSettleExpense(expense.id)}
                     className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
@@ -133,6 +168,26 @@ const AddExpense = ({ groupId }) => {
           </ul>
         ) : (
           <p>No expenses added yet.</p>
+        )}
+      </div>
+
+      <div className="mt-6 w-full max-w-md">
+        <h3 className="text-lg font-bold mb-2">Settlements:</h3>
+        {settlements.length > 0 ? (
+          <ul className="space-y-2">
+            {settlements.map((settlement) => (
+              <li
+                key={settlement.id}
+                className="p-2 border rounded bg-gray-50 flex justify-between items-center"
+              >
+                <span>
+                  {settlement.payer_name} owes {settlement.payee_name} ${settlement.amount}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No settlements available yet.</p>
         )}
       </div>
     </div>
