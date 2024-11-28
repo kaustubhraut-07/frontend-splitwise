@@ -155,7 +155,7 @@ const AddExpense = ({ groupId }) => {
                   <span>{expense.name}</span>
                   <span className="ml-2">${expense.amount}</span>
                 </div>
-                {expense.paid_to !== currentUserId && (
+                {expense.paid_by !== currentUserId && (
                   <button
                     onClick={() => handleSettleExpense(expense.id)}
                     className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
